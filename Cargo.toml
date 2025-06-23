@@ -1,0 +1,15 @@
+[package]
+name = "lemmy_known"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lemmy-client = "1.0.5"
+tokio = { version = "1.43.0", features = ["rt", "rt-multi-thread", "macros", "signal"] }
+tokio-util = { version =  "0.7.15", features = ["rt"]}
+dotenv = "0.15.0"
+serde_json = "1.0.140"
+diesel = { version = "2.2.0", features = ["postgres", "serde_json"] }
+diesel-async = { version = "0.5.2", features = ["postgres"] }
+anyhow = "1.0.98"
+webhook = "2.1.2"
