@@ -1,5 +1,12 @@
 use std::env::VarError;
 
+pub struct MqttEnvVariables {
+    pub mqtt_host: String,
+    pub mqtt_port: u16,
+    pub mqtt_user: Option<String>,
+    pub mqtt_password: Option<String>,
+}
+
 pub struct EnvVariables {
     pub db_host: String,
     pub db_port: u16,
@@ -7,6 +14,7 @@ pub struct EnvVariables {
     pub db_password: String,
     pub db_name: String,
     pub discord_webhook: Option<String>,
+    pub mqtt: Option<MqttEnvVariables>,
 }
 
 impl EnvVariables {
@@ -38,6 +46,24 @@ impl EnvVariables {
                 panic!("Discord webhook url must start with '{DISCORD_WEBHOOK_PREFIX}'");
             }
         }
+
+        let mqtt_host = std::env::var("MQTT_HOST").ok();
+        let mqtt_port = std::env::var("MQTT_PORT").ok().map(|s| s.parse::<u16>().expect("MQTT_PORT must be a u16"));
+        let mqtt_user = std::env::var("MQTT_USER").ok();
+        let mqtt_password = std::env::var("MQTT_PASSWORD").ok();
+        if mqtt_user.is_some() ^ mqtt_password.is_some() {
+            panic!("Credentials are partially missing");
+        }
+        let mqtt = match (mqtt_host, mqtt_port, mqtt_user, mqtt_password) {
+            (Some(host), Some(port), user, password) => Some(MqttEnvVariables {
+                mqtt_host: host,
+                mqtt_port: port,
+                mqtt_user: user,
+                mqtt_password: password,
+            }),
+            (_, _, _, _) => None
+        };
+
         EnvVariables {
             db_host,
             db_port,
@@ -45,6 +71,7 @@ impl EnvVariables {
             db_password,
             db_name,
             discord_webhook,
+            mqtt
         }
     }
 }

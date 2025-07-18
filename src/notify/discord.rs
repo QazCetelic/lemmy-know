@@ -1,8 +1,21 @@
+use crate::notify::notify::NotifyReport;
 use anyhow::anyhow;
+use async_trait::async_trait;
 use lemmy_client::lemmy_api_common::lemmy_db_views::structs::{CommentReportView, PostReportView};
 use webhook::client::WebhookClient;
 
 const USERNAME: &str = "Report Notifier";
+
+#[async_trait]
+impl NotifyReport for WebhookClient {
+    async fn notify_post(&self, source_domain: &str, report: &PostReportView) -> anyhow::Result<()> {
+        send_post_report_notification(self, source_domain, &report).await
+    }
+
+    async fn notify_comment(&self, source_domain: &str, report: &CommentReportView) -> anyhow::Result<()> {
+        send_comment_report_notification(self, source_domain, &report).await
+    }
+}
 
 pub async fn send_post_report_notification(client: &WebhookClient, domain: &str, report: &PostReportView) -> anyhow::Result<()> {
     let view_url = format!("https://{domain}/reports");

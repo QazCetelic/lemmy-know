@@ -1,5 +1,7 @@
 use lemmy_client::lemmy_api_common::lemmy_db_schema::newtypes::{CommentReportId, PostReportId};
 
+// The integer value of the newtype is not exposed, but this works
+
 pub fn extract_post_report_id(id: &PostReportId) -> i32 {
     let json = serde_json::to_string(&id).expect("Failed to convert to JSON");
     let post_report_id: i32 = json.parse().expect("Failed to convert to JSON");
