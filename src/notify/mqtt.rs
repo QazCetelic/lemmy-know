@@ -1,16 +1,16 @@
 use crate::env::MqttEnvVariables;
-use crate::notify::notify::NotifyReport;
 use async_trait::async_trait;
 use lemmy_client::lemmy_api_common::lemmy_db_views::structs::{CommentReportView, PostReportView};
 use rumqttc::{AsyncClient, MqttOptions, QoS};
 use serde::Serialize;
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
+use crate::notify::NotifyReport;
 
 pub async fn connect_mqtt(vars: &MqttEnvVariables, cancellation_token: CancellationToken) -> anyhow::Result<AsyncClient> {
-    let mut options = MqttOptions::new("lemmy-know", vars.mqtt_host.clone(), vars.mqtt_port);
-    if let (Some(user), Some(pass)) = (&vars.mqtt_user, &vars.mqtt_password) {
-        options.set_credentials(user, pass);
+    let mut options = MqttOptions::new("lemmy-know", vars.host.clone(), vars.port);
+    if let Some(credentials) = &vars.credentials {
+        options.set_credentials(credentials.user.clone(), credentials.password.clone());
     }
     options.set_keep_alive(Duration::from_secs(5));
 
@@ -39,7 +39,7 @@ struct MqttPayload<'a, TReport> {
 impl NotifyReport for AsyncClient {
     async fn notify_post(&self, source_domain: &str, report: &PostReportView) -> anyhow::Result<()> {
         let payload = MqttPayload {
-            source_domain: source_domain,
+            source_domain,
             report: &report,
         };
         let json = serde_json::to_string(&payload)?;
@@ -49,7 +49,7 @@ impl NotifyReport for AsyncClient {
 
     async fn notify_comment(&self, source_domain: &str, report: &CommentReportView) -> anyhow::Result<()> {
         let payload = MqttPayload {
-            source_domain: source_domain,
+            source_domain,
             report: &report,
         };
         let json = serde_json::to_string(&payload)?;

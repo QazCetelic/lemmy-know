@@ -79,7 +79,7 @@ pub async fn get_known_comment_ids(db_conn: &mut AsyncPgConnection, ids: Vec<i32
     Ok(ids)
 }
 
-pub async fn insert_post_reports(db_conn: &mut AsyncPgConnection, domain: &str, reports: &Vec<PostReportView>) -> anyhow::Result<()> {
+pub async fn insert_post_reports(db_conn: &mut AsyncPgConnection, domain: &str, reports: &[PostReportView]) -> anyhow::Result<()> {
     use crate::schema::post_reports;
     if reports.is_empty() {
         return Ok(());
@@ -100,7 +100,7 @@ pub async fn insert_post_reports(db_conn: &mut AsyncPgConnection, domain: &str, 
     Ok(())
 }
 
-pub async fn insert_comment_reports(db_conn: &mut AsyncPgConnection, domain: &str, comments: &Vec<CommentReportView>) -> anyhow::Result<()> {
+pub async fn insert_comment_reports(db_conn: &mut AsyncPgConnection, domain: &str, comments: &[CommentReportView]) -> anyhow::Result<()> {
     use crate::schema::comment_reports;
     if comments.is_empty() {
         return Ok(());

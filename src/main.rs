@@ -8,20 +8,19 @@ mod notify;
 mod lemmy;
 
 use crate::db::{create_tables, establish_db_conn};
-use crate::env::EnvVariables;
-use crate::notify::collect_notifiers;
-use crate::notify::notify::NotifyReport;
+use crate::env::{EnvArgs, EnvVariables};
+use crate::notify::{collect_notifiers, NotifyReport};
 use crate::util::sleep;
-use diesel::prelude::*;
 use diesel_async::AsyncPgConnection;
-use diesel_async::RunQueryDsl;
 use std::time::Duration;
+use clap::Parser;
 use tokio::{select, signal};
 use tokio_util::sync::CancellationToken;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let env_vars = EnvVariables::load();
+    let env_args: EnvArgs = EnvArgs::parse();
+    let env_vars: EnvVariables = env_args.into();
     let mut db_conn = establish_db_conn(&env_vars).await?;
     create_tables(&mut db_conn).await?;
     let token = CancellationToken::new();
@@ -63,7 +62,7 @@ async fn check_reports(token: CancellationToken, mut db_conn: AsyncPgConnection,
                 .filter(|v| !known_post_report_ids.contains(&stupid::extract_post_report_id(&v.post_report.id)) && !v.post_report.resolved)
                 .cloned()
                 .collect::<Vec<_>>();
-            db::insert_post_reports(&mut db_conn, &domain, &new_post_reports).await?;
+            db::insert_post_reports(&mut db_conn, domain, &new_post_reports).await?;
 
             for post_report in &new_post_reports {
                 for notifier in &notifiers {
@@ -76,7 +75,7 @@ async fn check_reports(token: CancellationToken, mut db_conn: AsyncPgConnection,
                 .filter(|v| !known_comment_report_ids.contains(&stupid::extract_comment_report_id(&v.comment_report.id)) && !v.comment_report.resolved)
                 .cloned()
                 .collect::<Vec<_>>();
-            db::insert_comment_reports(&mut db_conn, &domain, &new_comment_reports).await?;
+            db::insert_comment_reports(&mut db_conn, domain, &new_comment_reports).await?;
 
             for comment_report in &new_comment_reports {
                 for notifier in &notifiers {
