@@ -3,6 +3,10 @@
 Lemmy Know (*let me know*) is a lightweight CLI application / Docker service that monitors Lemmy for reports on posts and comments and sends notification.
 These can be sent to a Discord channel with a webhook or as MQTT messages ([schema](#mqtt-message-schema)), which is useful for more complex setups with e.g., Node-RED.
 
+Reports sometimes don't federate with my main account's instance and I therefore had to check several sites manually each day.
+There were also some instance for which the reports didn't seem to federate at all.
+This tool is therefore made to check for reports using multiple accounts on multiple instances to avoid this problem.
+
 The Docker image is ~25MB, and the container uses 6MB RAM and ~0.1% CPU on my server.
 
 If you find bugs, have suggestions, or want to contribute features, feel free to open an issue or submit a pull request.
