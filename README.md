@@ -58,6 +58,7 @@ class post_reports {
 ## MQTT message schema
 
 ### Comment
+Topic: `lemmy-know/comment`
 ```json
 {
   "source_domain": STRING,
@@ -169,6 +170,7 @@ class post_reports {
 ```
 
 ### Post
+Topic: `lemmy-know/post`
 ```json
 {
   "source_domain": STRING,
