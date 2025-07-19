@@ -14,11 +14,13 @@ use crate::util::sleep;
 use diesel_async::AsyncPgConnection;
 use std::time::Duration;
 use clap::Parser;
+use dotenv::dotenv;
 use tokio::{select, signal};
 use tokio_util::sync::CancellationToken;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let _ = dotenv(); // Load env for development
     let env_args: EnvArgs = EnvArgs::parse();
     let env_vars: EnvVariables = env_args.into();
     let mut db_conn = establish_db_conn(&env_vars).await?;
@@ -27,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
 
     let notifiers: Vec<Box<dyn NotifyReport>> = collect_notifiers(&env_vars, token.clone()).await?;
 
-    let check_reports_task = tokio::spawn(check_reports(token.clone(), db_conn, notifiers));
+    let check_reports_task = tokio::spawn(check_reports(token.clone(), env_vars.interval, db_conn, notifiers));
 
     println!("Startup completed.");
 
@@ -47,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn check_reports(token: CancellationToken, mut db_conn: AsyncPgConnection, notifiers: Vec<Box<dyn NotifyReport>>) -> anyhow::Result<()> {
+async fn check_reports(token: CancellationToken, interval: u64, mut db_conn: AsyncPgConnection, notifiers: Vec<Box<dyn NotifyReport>>) -> anyhow::Result<()> {
     let clients = lemmy::collect_clients(&mut db_conn).await?;
     println!("Checking reports using {} clients", clients.len());
     while !token.is_cancelled() {
@@ -84,9 +86,8 @@ async fn check_reports(token: CancellationToken, mut db_conn: AsyncPgConnection,
             }
         }
 
-        const INTERVAL_SECONDS: u64 = 120;
-        println!("Waiting {INTERVAL_SECONDS}s before checking again...");
-        sleep(Duration::from_secs(INTERVAL_SECONDS), &token).await;
+        println!("Waiting {interval}s before checking again...");
+        sleep(Duration::from_secs(interval), &token).await;
     }
 
     Ok(())

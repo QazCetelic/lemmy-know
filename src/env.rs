@@ -5,26 +5,39 @@ use std::str::FromStr;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct EnvArgs {
+    /// Host of Postgres database
     #[arg(long, env)]
     pub db_host: String,
+    /// Port of Postgres database
     #[arg(long, env)]
     pub db_port: u16,
+    /// Username for Postgres database
     #[arg(long, env)]
     pub db_user: String,
+    /// Password for Postgres database
     #[arg(long, env)]
     pub db_password: String,
+    /// Database name of Postgres database
     #[arg(long, env)]
     pub db_name: String,
+    /// Optional Discord webhook
     #[arg(short, long, env)]
     pub discord_webhook: Option<DiscordWebhook>,
+    /// Host of optional MQTT broker
     #[arg(long, env)]
     pub mqtt_host: Option<String>,
+    /// Port of optional MQTT broker
     #[arg(long, env)]
     pub mqtt_port: Option<u16>,
+    /// Username for optional MQTT broker
     #[arg(long, env)]
     pub mqtt_user: Option<String>,
+    /// Password for optional MQTT broker
     #[arg(long, env)]
     pub mqtt_password: Option<String>,
+    /// Interval in seconds to send request to check for reports
+    #[arg(short, long, env, default_value_t = 60)]
+    pub interval: u64,
 }
 
 pub struct MqttCredentialEnvVariables {
@@ -67,6 +80,7 @@ pub struct EnvVariables {
     pub db_name: String,
     pub discord_webhook: Option<DiscordWebhook>,
     pub mqtt: Option<MqttEnvVariables>,
+    pub interval: u64,
 }
 
 #[derive(Clone)]
@@ -112,6 +126,7 @@ impl From<EnvArgs> for EnvVariables {
             db_name: value.db_name,
             discord_webhook: value.discord_webhook,
             mqtt,
+            interval: value.interval,
         }
     }
 }
