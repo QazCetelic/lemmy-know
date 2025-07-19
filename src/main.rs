@@ -7,7 +7,7 @@ mod util;
 mod notify;
 mod lemmy;
 
-use crate::db::establish_db_conn;
+use crate::db::{create_tables, establish_db_conn};
 use crate::env::EnvVariables;
 use crate::notify::collect_notifiers;
 use crate::notify::notify::NotifyReport;
@@ -22,7 +22,8 @@ use tokio_util::sync::CancellationToken;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let env_vars = EnvVariables::load();
-    let db_conn = establish_db_conn(&env_vars).await?;
+    let mut db_conn = establish_db_conn(&env_vars).await?;
+    create_tables(&mut db_conn).await?;
     let token = CancellationToken::new();
 
     let notifiers: Vec<Box<dyn NotifyReport>> = collect_notifiers(&env_vars, token.clone()).await?;
@@ -59,7 +60,7 @@ async fn check_reports(token: CancellationToken, mut db_conn: AsyncPgConnection,
             let known_comment_report_ids = db::get_known_comment_ids(&mut db_conn, comment_report_ids).await?;
             let new_post_reports = post_reports
                 .iter()
-                .filter(|v| !known_post_report_ids.contains(&stupid::extract_post_report_id(&v.post_report.id)))
+                .filter(|v| !known_post_report_ids.contains(&stupid::extract_post_report_id(&v.post_report.id)) && !v.post_report.resolved)
                 .cloned()
                 .collect::<Vec<_>>();
             db::insert_post_reports(&mut db_conn, &domain, &new_post_reports).await?;
@@ -72,7 +73,7 @@ async fn check_reports(token: CancellationToken, mut db_conn: AsyncPgConnection,
 
             let new_comment_reports = comment_reports
                 .iter()
-                .filter(|v| !known_comment_report_ids.contains(&stupid::extract_comment_report_id(&v.comment_report.id)))
+                .filter(|v| !known_comment_report_ids.contains(&stupid::extract_comment_report_id(&v.comment_report.id)) && !v.comment_report.resolved)
                 .cloned()
                 .collect::<Vec<_>>();
             db::insert_comment_reports(&mut db_conn, &domain, &new_comment_reports).await?;

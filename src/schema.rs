@@ -1,5 +1,5 @@
 diesel::table! {
-    lemmy.credentials (domain, username) {
+    credentials (domain, username) {
         domain -> Text,
         username -> Text,
         password -> Text,
@@ -7,7 +7,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    lemmy.post_reports (domain, id) {
+    post_reports (domain, id) {
         domain -> Text,
         id -> Int4,
         data -> Jsonb,
@@ -15,7 +15,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    lemmy.comment_reports (domain, id) {
+    comment_reports (domain, id) {
         domain -> Text,
         id -> Int4,
         data -> Jsonb,

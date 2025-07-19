@@ -2,7 +2,7 @@ use crate::env::EnvVariables;
 use crate::models::comment_report::CommentReportEntity;
 use crate::models::post_report::PostReportEntity;
 use crate::stupid;
-use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
+use diesel::{sql_query, ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use diesel_async::{AsyncConnection, AsyncPgConnection};
 use lemmy_client::lemmy_api_common::lemmy_db_views::structs::{CommentReportView, PostReportView};
@@ -17,6 +17,40 @@ pub async fn establish_db_conn(env_vars: &EnvVariables) -> anyhow::Result<AsyncP
         env_vars.db_name
     );
     Ok(AsyncPgConnection::establish(&db_url).await?)
+}
+
+pub async fn create_tables(db_conn: &mut AsyncPgConnection) -> anyhow::Result<()> {
+    sql_query(r#"
+        CREATE TABLE IF NOT EXISTS credentials
+        (
+            domain   TEXT NOT NULL,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            CONSTRAINT credentials_pk PRIMARY KEY (domain, username)
+        );
+    "#).execute(db_conn).await?;
+
+    sql_query(r#"
+        CREATE TABLE IF NOT EXISTS post_reports
+        (
+            domain TEXT    NOT NULL,
+            id     INTEGER NOT NULL,
+            data   JSONB   NOT NULL,
+            CONSTRAINT post_reports_pk PRIMARY KEY (domain, id)
+        );
+    "#).execute(db_conn).await?;
+
+    sql_query(r#"
+        CREATE TABLE IF NOT EXISTS comment_reports
+        (
+            domain TEXT    NOT NULL,
+            id     INTEGER NOT NULL,
+            data   JSONB   NOT NULL,
+            CONSTRAINT comment_reports_pk PRIMARY KEY (domain, id)
+        );
+    "#).execute(db_conn).await?;
+
+    Ok(())
 }
 
 pub async fn get_known_post_ids(db_conn: &mut AsyncPgConnection, ids: Vec<i32>) -> anyhow::Result<Vec<i32>> {
