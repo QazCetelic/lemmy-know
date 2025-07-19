@@ -87,7 +87,7 @@ pub async fn insert_post_reports(db_conn: &mut AsyncPgConnection, domain: &str, 
     let new_reports: Vec<PostReportEntity> = reports
         .iter()
         .map(|view| PostReportEntity {
-            id: stupid::extract_post_report_id(&view.post_report.id),
+            id: stupid::extract_post_report_id(view.post_report.id),
             domain: domain.to_string(),
             data: serde_json::to_value(view).unwrap(),
         })
@@ -108,7 +108,7 @@ pub async fn insert_comment_reports(db_conn: &mut AsyncPgConnection, domain: &st
     let new_comments: Vec<CommentReportEntity> = comments
         .iter()
         .map(|view| CommentReportEntity {
-            id: stupid::extract_comment_report_id(&view.comment_report.id),
+            id: stupid::extract_comment_report_id(view.comment_report.id),
             domain: domain.to_string(),
             data: serde_json::to_value(view).unwrap(),
         })
