@@ -11,12 +11,16 @@ use lemmy_client::lemmy_api_common::person::Login;
 use lemmy_client::lemmy_api_common::post::ListPostReports;
 use lemmy_client::{ClientOptions, LemmyClient};
 
-pub async fn collect_clients(db_conn: &mut AsyncPgConnection) -> anyhow::Result<Vec<(LemmyClient, String)>> {
+pub async fn get_credentials(db_conn: &mut AsyncPgConnection) -> anyhow::Result<Vec<CredentialEntity>> {
     let creds: Vec<CredentialEntity> = credentials
         .select(CredentialEntity::as_select())
         .load::<CredentialEntity>(db_conn)
         .await?;
 
+    Ok(creds)
+}
+
+pub async fn collect_clients(creds: Vec<CredentialEntity>) -> anyhow::Result<Vec<(LemmyClient, String)>> {
     let mut authenticated_clients: Vec<(LemmyClient, String)> = Vec::new();
     for cred in creds {
         let client_options = ClientOptions {
@@ -45,7 +49,7 @@ pub async fn collect_clients(db_conn: &mut AsyncPgConnection) -> anyhow::Result<
     Ok(authenticated_clients)
 }
 
-pub async fn get_reports(client: &LemmyClient) -> anyhow::Result<(Vec<PostReportView>, Vec<CommentReportView>)> {
+pub async fn get_post_reports(client: &LemmyClient) -> anyhow::Result<Vec<PostReportView>> {
     let list_post_reports_request = ListPostReports {
         page: None,
         limit: Some(50),
@@ -56,6 +60,10 @@ pub async fn get_reports(client: &LemmyClient) -> anyhow::Result<(Vec<PostReport
     let list_post_reports_response = client.list_post_reports(list_post_reports_request).await.map_err(|e| anyhow!(e))?;
     let post_reports = list_post_reports_response.post_reports;
 
+    Ok(post_reports)
+}
+
+pub async fn get_comment_reports(client: &LemmyClient) -> anyhow::Result<Vec<CommentReportView>> {
     let list_comment_report_request = ListCommentReports  {
         comment_id: None,
         page: None,
@@ -66,5 +74,5 @@ pub async fn get_reports(client: &LemmyClient) -> anyhow::Result<(Vec<PostReport
     let list_comment_report_response = client.list_comment_reports(list_comment_report_request).await.map_err(|e| anyhow!(e))?;
     let comment_reports = list_comment_report_response.comment_reports;
 
-    Ok((post_reports, comment_reports))
+    Ok(comment_reports)
 }

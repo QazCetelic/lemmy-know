@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use crate::schema::credentials;
 
-#[derive(Clone, Queryable, Identifiable, Selectable)]
+#[derive(Clone, Queryable, Identifiable, Selectable, Hash)]
 #[diesel(primary_key(domain, username))]
 #[diesel(table_name = credentials)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

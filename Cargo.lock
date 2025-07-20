@@ -209,6 +209,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
 
 [[package]]
+name = "change-detector"
+version = "1.0.0"
+source = "git+https://github.com/QazCetelic/change-detector-rs.git#f2d09bca412dec0d0869aaacb3822f74425ca4e6"
+
+[[package]]
 name = "chrono"
 version = "0.4.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1312,6 +1317,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "change-detector",
  "clap",
  "diesel",
  "diesel-async",
