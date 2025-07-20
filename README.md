@@ -16,8 +16,7 @@ If you find bugs, have suggestions, or want to contribute features, feel free to
 The application uses a Postgres database to store credentials, the ID's of the reports which have already been sent, and the full report as a JSONB column in case you want to check something later.
 
 1. Start application to generate [DB tables](#database-schema)
-2. Add Lemmy moderator account credentials
-3. Restart application
+2. Add Lemmy moderator account credentials to table
 
 ### Options
 When running as CLI application it will use a `.env` file in the current working directory if available.
