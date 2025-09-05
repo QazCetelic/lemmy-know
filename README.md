@@ -29,10 +29,14 @@ When running as CLI application it will use a `.env` file in the current working
 | `--db-password`           | DB_PASSWORD          | Password for the PostgreSQL database.                      |
 | `--db-name`               | DB_NAME              | Database name of the PostgreSQL database.                  |
 | `-d`, `--discord-webhook` | DISCORD_WEBHOOK      | Optional Discord webhook for notification.                 |
-| `--mqtt-host`             | MQTT_HOST            | Host of the optional MQTT broker.                          |
-| `--mqtt-port`             | MQTT_PORT            | Port of the optional MQTT broker.                          |
-| `--mqtt-user`             | MQTT_USER            | Username for the optional MQTT broker.                     |
-| `--mqtt-password`         | MQTT_PASSWORD        | Password for the optional MQTT broker.                     |
+| `--ntfy-host`             | NTFY_HOST            | Host URL for ntfy notifications.                           |
+| `--ntfy-topic`            | NTFY_TOPIC           | Topic for ntfy notifications. `lemmy-know` by default.     |
+| `--ntfy-username`         | NTFY_USERNAME        | Username for ntfy.                                         |
+| `--ntfy-password`         | NTFY_PASSWORD        | Password for ntfy.                                         |
+| `--mqtt-host`             | MQTT_HOST            | Host of the MQTT broker.                                   |
+| `--mqtt-port`             | MQTT_PORT            | Port of the MQTT broker.                                   |
+| `--mqtt-user`             | MQTT_USER            | Username for the MQTT broker.                              |
+| `--mqtt-password`         | MQTT_PASSWORD        | Password for the MQTT broker.                              |
 | `-i`, `--interval`        | INTERVAL             | Interval in seconds to send requests to check for reports. |
 
 ## Database Schema
