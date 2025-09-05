@@ -23,6 +23,18 @@ pub struct EnvArgs {
     /// Optional Discord webhook
     #[arg(short, long, env)]
     pub discord_webhook: Option<DiscordWebhook>,
+    /// Host URL for ntfy notifications
+    #[arg(long, env)]
+    pub ntfy_host: Option<String>,
+    /// Topic for ntfy notifications
+    #[arg(long, env, default_value = "lemmy-know")]
+    pub ntfy_topic: String,
+    /// Username for ntfy
+    #[arg(long, env)]
+    pub ntfy_username: Option<String>,
+    /// Password for ntfy
+    #[arg(long, env)]
+    pub ntfy_password: Option<String>,
     /// Host of optional MQTT broker
     #[arg(long, env)]
     pub mqtt_host: Option<String>,
@@ -38,6 +50,38 @@ pub struct EnvArgs {
     /// Interval in seconds to send request to check for reports
     #[arg(short, long, env, default_value_t = 60)]
     pub interval: u64,
+}
+
+pub struct NtfyCredentialEnvVariables {
+    pub username: String,
+    pub password: String,
+}
+
+pub struct NtfyEnvVariables {
+    pub host: String,
+    pub topic: String,
+    pub credentials: Option<NtfyCredentialEnvVariables>,
+}
+
+impl TryFrom<&EnvArgs> for NtfyEnvVariables {
+    type Error = &'static str;
+
+    fn try_from(value: &EnvArgs) -> Result<Self, Self::Error> {
+        let credentials = match (&value.ntfy_username, &value.ntfy_password) {
+            (Some(username), Some(password)) => Some(NtfyCredentialEnvVariables {
+                username: username.clone(),
+                password: password.clone(),
+            }),
+            (Some(_), None) => Err("Ntfy username provided but no password specified")?,
+            (None, Some(_)) => Err("Ntfy password provided but no username specified")?,
+            (None, None) => None,
+        };
+        Ok(NtfyEnvVariables {
+            host: value.ntfy_host.clone().ok_or("No ntfy host set")?,
+            topic: value.ntfy_topic.clone(),
+            credentials,
+        })
+    }
 }
 
 pub struct MqttCredentialEnvVariables {
@@ -79,6 +123,7 @@ pub struct EnvVariables {
     pub db_password: String,
     pub db_name: String,
     pub discord_webhook: Option<DiscordWebhook>,
+    pub ntfy: Option<NtfyEnvVariables>,
     pub mqtt: Option<MqttEnvVariables>,
     pub interval: u64,
 }
@@ -118,6 +163,7 @@ impl FromStr for DiscordWebhook {
 impl From<EnvArgs> for EnvVariables {
     fn from(value: EnvArgs) -> Self {
         let mqtt = (&value).try_into().ok();
+        let ntfy = (&value).try_into().ok();
         EnvVariables {
             db_host: value.db_host,
             db_port: value.db_port,
@@ -126,6 +172,7 @@ impl From<EnvArgs> for EnvVariables {
             db_name: value.db_name,
             discord_webhook: value.discord_webhook,
             mqtt,
+            ntfy,
             interval: value.interval,
         }
     }

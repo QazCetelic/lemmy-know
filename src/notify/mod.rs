@@ -1,3 +1,4 @@
+use ::ntfy::{dispatcher, Auth};
 use async_trait::async_trait;
 use lemmy_client::lemmy_api_common::lemmy_db_views::structs::{CommentReportView, PostReportView};
 use tokio_util::sync::CancellationToken;
@@ -7,6 +8,7 @@ use crate::env::EnvVariables;
 pub mod discord;
 pub mod console;
 pub mod mqtt;
+pub mod ntfy;
 
 #[async_trait]
 pub trait NotifyReport: Send + Sync {
@@ -19,11 +21,22 @@ pub async fn collect_notifiers(env_vars: &EnvVariables, cancellation_token: Canc
     notifiers.push(Box::new(console::ConsoleNotifyReport {}));
     if let Some(webhook) = &env_vars.discord_webhook {
         let discord_client = WebhookClient::new(webhook.url());
-        notifiers.push(Box::new(discord_client))
+        notifiers.push(Box::new(discord_client));
+        println!("Discord notifier was enabled.");
+    }
+    if let Some(ntfy) = &env_vars.ntfy {
+        let mut builder = dispatcher::builder(ntfy.host.clone());
+        if let Some(creds) = &ntfy.credentials {
+            builder = builder.credentials(Auth::credentials(creds.username.clone(), creds.password.clone()));
+        }
+        let dispatcher = builder.build_async()?;
+        notifiers.push(Box::new((dispatcher, ntfy.topic.clone())));
+        println!("ntfy.sh notifier was enabled.");
     }
     if let Some(vars) = &env_vars.mqtt {
         let mqtt_client = mqtt::connect_mqtt(vars, cancellation_token.clone()).await?;
         notifiers.push(Box::new(mqtt_client));
+        println!("MQTT notifier was enabled.");
     }
     Ok(notifiers)
 }
