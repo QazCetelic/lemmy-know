@@ -21,6 +21,8 @@ The application uses a Postgres database to store credentials, the ID's of the r
 ### Options
 When running as CLI application it will use a `.env` file in the current working directory if available.
 
+**Note:** All notification methods are optional, you only need to supply the variables for the methods you want to use.
+
 | CLI Option                | Environment variable | Description                                                |
 |---------------------------|----------------------|------------------------------------------------------------|
 | `--db-host`               | DB_HOST              | Host of the PostgreSQL database.                           |
